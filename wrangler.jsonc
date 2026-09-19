@@ -5,5 +5,8 @@
   // Static site only: no Worker script, just the files in ./public
   "assets": {
     "directory": "./public"
-  }
+  },
+  "routes": [
+    { "pattern": "jevplayground.terrydjony.com", "custom_domain": true }
+  ]
 }

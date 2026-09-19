@@ -2,7 +2,7 @@
 
 A browser-only testbed for [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), TypeSafe AI's decision model, running through the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway/modalities/evaluation).
 
-**Live: https://jevplayground.terrydjony.workers.dev**
+**Live: https://jevplayground.terrydjony.com**
 
 Jev is not a chat model. You give it some *state* (a ticket, a transcript, a JSON record) and a set of typed *questions*; it answers all of them in one parallel pass with probabilities attached:
 
