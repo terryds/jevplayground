@@ -510,11 +510,11 @@ const PRESETS = [
     stateMode: 'text',
     state: "Airbnb, but we own the whole building. Every room has the same layout so guests know what to expect. There's a person at a desk in the lobby 24/7 to hand you your key. We clean the room every day while you're out, and there's a small fridge with drinks you can pay for later. Breakfast is included downstairs from 6 to 10. We're calling it a \"vertically integrated stay platform.\" Pre-seed, raising $4M.",
     questions: [
-      { key: 'whatIsIt', type: 'choice', instructions: 'What is this startup actually describing?',
-        options: [['a_hotel', 'a building of rentable rooms with a front desk and housekeeping'], ['a_hostel', 'cheap shared rooms for travelers'], ['a_genuinely_new_idea', 'something that does not exist yet'], ['a_cult', 'a group living arrangement with a charismatic founder']] },
-      { key: 'originality', type: 'score', instructions: 'How original is this idea?',
-        levels: ['invented in ancient Rome', 'your grandparents used one', 'a twist on something familiar', 'never been done'] },
-      { key: 'alreadyExists', type: 'boolean', instructions: 'Does this product already exist under a common name?' },
+      { key: 'fundability', type: 'score', instructions: 'How likely is this startup to raise a seed round?',
+        levels: ['no chance', 'a friends-and-family round at best', 'plausible with a good deck', 'term sheets by Friday'] },
+      { key: 'fate', type: 'choice', instructions: 'What is the most likely fate of this company?',
+        options: [['unicorn', 'becomes a billion-dollar company'], ['acquihire', 'team gets bought for talent'], ['pivot', 'abandons the idea for something else'], ['zombie', 'limps along for years'], ['dead_in_18_months', 'runs out of money and shuts down']] },
+      { key: 'buzzwordOverload', type: 'boolean', instructions: 'Does the pitch rely on buzzwords more than substance?' },
     ],
   },
   {
