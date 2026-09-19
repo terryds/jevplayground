@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/wrangler@latest/config-schema.json",
+  "name": "jevplayground",
+  "compatibility_date": "2026-09-01",
+  // Static site only: no Worker script, just the files in ./public
+  "assets": {
+    "directory": "./public"
+  }
+}

@@ -1,0 +1,1350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev Playground</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+<style>
+:root {
+  --bg: #f4f2ec;
+  --panel: #fbfaf6;
+  --panel-2: #efece3;
+  --line: #d9d4c5;
+  --text: #1c1b17;
+  --muted: #6d6a5e;
+  --accent: #2f6b1f;
+  --accent-soft: #dcebd0;
+  --accent-text: #ffffff;
+  --warn: #9a5b00;
+  --warn-soft: #f6e6c6;
+  --bad: #a3271f;
+  --bad-soft: #f5d9d5;
+  --bar: #c9c4b3;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f100d;
+    --panel: #171814;
+    --panel-2: #1f211b;
+    --line: #2e3128;
+    --text: #ecebe3;
+    --muted: #96968a;
+    --accent: #b5ee5a;
+    --accent-soft: #2a3516;
+    --accent-text: #10130a;
+    --warn: #f0b95a;
+    --warn-soft: #3a2c10;
+    --bad: #ff8a80;
+    --bad-soft: #3b1a17;
+    --bar: #3a3d32;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f100d;
+  --panel: #171814;
+  --panel-2: #1f211b;
+  --line: #2e3128;
+  --text: #ecebe3;
+  --muted: #96968a;
+  --accent: #b5ee5a;
+  --accent-soft: #2a3516;
+  --accent-text: #10130a;
+  --warn: #f0b95a;
+  --warn-soft: #3a2c10;
+  --bad: #ff8a80;
+  --bad-soft: #3b1a17;
+  --bar: #3a3d32;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+code, .mono { font-family: var(--mono); }
+
+/* ---------- top bar ---------- */
+header {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  padding: 12px 20px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand h1 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+.brand .model { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.key { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.key input[type="password"], .key input[type="text"] { flex: 1 1 260px; padding: 10px 12px; font-size: 13px; }
+.keypanel { transition: border-color 0.2s, box-shadow 0.2s; }
+.keypanel.empty { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.keypanel.empty .panel-head h2 { color: var(--text); }
+.keypanel.nudge { animation: nudge 0.4s ease; }
+@keyframes nudge { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .keypanel.nudge { animation: none; } }
+.keychip { font-size: 12px; padding: 3px 10px; border-radius: 99px; cursor: pointer; border: 1px solid var(--line); color: var(--muted); }
+.gh { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); text-decoration: none; }
+.gh:hover { color: var(--text); }
+.keychip.missing { background: var(--warn-soft); color: var(--warn); border-color: transparent; font-weight: 600; }
+.key input[type="password"], .key input[type="text"] {
+  flex: 1; min-width: 0;
+  font-family: var(--mono); font-size: 12.5px;
+  padding: 7px 10px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+}
+.remember { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); white-space: nowrap; cursor: pointer; }
+
+/* ---------- layout ---------- */
+main {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px;
+  padding: 20px; max-width: 1500px; margin: 0 auto;
+}
+@media (max-width: 960px) { main { grid-template-columns: minmax(0, 1fr); padding: 16px; } }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.panel-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.panel-head h2 {
+  margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--muted);
+}
+.panel-head .spacer { flex: 1; }
+.hint { font-size: 12px; color: var(--muted); }
+
+/* ---------- controls ---------- */
+.btn {
+  padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  background: var(--panel-2); border: 1px solid var(--line);
+  font-size: 12.5px;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.ghost { background: transparent; }
+.btn.icon { padding: 4px 8px; line-height: 1; color: var(--muted); }
+.btn.icon:hover { color: var(--bad); border-color: var(--bad); }
+.btn.primary {
+  background: var(--accent); border-color: var(--accent); color: var(--accent-text);
+  font-weight: 600; padding: 9px 18px; font-size: 14px;
+}
+.btn.primary:disabled { opacity: 0.55; cursor: progress; }
+.btn:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button {
+  border: 0; background: transparent; padding: 4px 11px; font-size: 12px; cursor: pointer; color: var(--muted);
+}
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--text); font-weight: 600; }
+textarea, .field {
+  width: 100%; padding: 8px 10px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+}
+textarea { resize: vertical; min-height: 40px; display: block; }
+#state { min-height: 150px; font-family: var(--mono); font-size: 12.5px; }
+.presets { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 14px; align-items: baseline; }
+.presets .group-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+.presets .group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ---------- question cards ---------- */
+.q {
+  border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; margin-bottom: 10px;
+  background: var(--bg);
+}
+.q-top { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.q-top .field.key-name { font-family: var(--mono); font-size: 12.5px; flex: 1; min-width: 0; }
+.q-top select { padding: 7px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.crit { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.crit-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+.crit-row { display: flex; gap: 6px; align-items: center; }
+.crit-row .name { flex: 0 0 32%; font-family: var(--mono); font-size: 12.5px; }
+.crit-row .rung { flex: 0 0 22px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.crit-row .field { padding: 6px 9px; }
+.crit-row .tf { flex: 0 0 42px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+/* ---------- run bar ---------- */
+.runbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.runbar .threshold { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.runbar input[type="range"] { accent-color: var(--accent); width: 120px; }
+.check { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); cursor: pointer; }
+kbd {
+  font-family: var(--mono); font-size: 11px; padding: 1px 5px; border-radius: 4px;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--muted);
+}
+
+/* ---------- results ---------- */
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 520px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.metric { background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; }
+.metric .v { font-family: var(--mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.metric .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin: 0 -16px 12px; padding: 0 16px; }
+.tabs button {
+  border: 0; background: transparent; padding: 7px 12px; cursor: pointer; color: var(--muted);
+  border-bottom: 2px solid transparent; margin-bottom: -1px; font-size: 13px;
+}
+.tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+
+.answer { border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px; margin-bottom: 10px; background: var(--bg); }
+.answer-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
+.answer-head .name { font-family: var(--mono); font-weight: 600; }
+.tag {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 1px 7px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted);
+}
+.tag.auto { background: var(--accent-soft); border-color: transparent; color: var(--text); }
+.tag.review { background: var(--warn-soft); border-color: transparent; color: var(--warn); }
+.answer .instr { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+.verdict { font-size: 22px; font-weight: 650; letter-spacing: -0.01em; margin-bottom: 8px; }
+.verdict small { font: 13px var(--mono); color: var(--muted); font-weight: 400; margin-left: 8px; }
+
+.dist { display: grid; grid-template-columns: minmax(60px, max-content) minmax(0, 1fr) 56px; gap: 5px 10px; align-items: center; }
+.dist .lbl { font-family: var(--mono); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+.dist .lbl.win { font-weight: 700; }
+.dist .track { height: 10px; background: var(--panel-2); border-radius: 99px; overflow: hidden; }
+.dist .fill { height: 100%; background: var(--bar); border-radius: 99px; min-width: 2px; transition: width 0.35s ease; }
+.dist .fill.win { background: var(--accent); }
+.dist .pct { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+.scale { position: relative; height: 26px; margin: 4px 0 14px; }
+.scale .rail { position: absolute; left: 0; right: 0; top: 11px; height: 4px; background: var(--panel-2); border-radius: 99px; }
+.scale .tick { position: absolute; top: 7px; width: 2px; height: 12px; background: var(--bar); transform: translateX(-1px); }
+.scale .marker {
+  position: absolute; top: 4px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent); border: 3px solid var(--bg); transform: translateX(-9px);
+  box-shadow: 0 0 0 1px var(--accent); transition: left 0.35s ease;
+}
+
+.empty { color: var(--muted); padding: 28px 8px; text-align: center; }
+.empty strong { color: var(--text); display: block; font-size: 15px; margin-bottom: 4px; }
+.notice { border-radius: 9px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+.notice.error { background: var(--bad-soft); color: var(--bad); }
+.notice.warn { background: var(--warn-soft); color: var(--warn); }
+pre.code {
+  margin: 0; padding: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 9px;
+  font: 12px/1.55 var(--mono); overflow: auto; max-height: 520px; white-space: pre; tab-size: 2;
+}
+.code-wrap { position: relative; }
+.code-wrap .copy { position: absolute; top: 8px; right: 8px; }
+.sub { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin: 14px 0 6px; }
+.sub:first-child { margin-top: 0; }
+
+.history { display: flex; gap: 6px; flex-wrap: wrap; }
+.history button {
+  font-family: var(--mono); font-size: 11.5px; padding: 3px 9px; border-radius: 99px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--muted);
+}
+.history button[aria-pressed="true"] { border-color: var(--accent); color: var(--text); }
+.history button.err { color: var(--bad); }
+
+.tabs .share { margin-left: auto; align-self: center; margin-bottom: 5px; padding: 5px 12px; color: var(--text); border-radius: 8px; border-bottom: 0; }
+.btn.share { background: var(--accent-soft); border-color: transparent; font-weight: 600; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+dialog#shareDialog {
+  width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+  padding: 0; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--panel); color: var(--text);
+}
+dialog#shareDialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px); }
+.share-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.share-head { display: flex; align-items: center; }
+.share-head h3 { margin: 0; font-size: 15px; flex: 1; }
+.share-preview {
+  border: 1px solid var(--line); border-radius: 10px; overflow: auto; max-height: 52vh; background: #0f100d;
+}
+.share-preview img { display: block; width: 100%; height: auto; }
+.share-opts { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.share-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.share-actions .status { font-size: 12.5px; color: var(--muted); margin-left: 4px; }
+
+footer { max-width: 1500px; margin: 0 auto; padding: 4px 20px 28px; font-size: 12px; color: var(--muted); }
+footer a { color: inherit; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Jev Playground</h1>
+    <span class="model">typesafe-ai/jev · Vercel AI Gateway</span>
+  </div>
+  <span class="keychip" id="keyChip" role="button" tabindex="0"></span>
+  <a class="gh" href="https://github.com/terryds/jevplayground" target="_blank" rel="noreferrer" title="Source on GitHub">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+    GitHub
+  </a>
+</header>
+
+<main>
+  <!-- ============ INPUT ============ -->
+  <section class="col">
+    <div class="panel keypanel empty" id="keyPanel">
+      <div class="panel-head">
+        <h2><label for="apiKey">Step 1 · Vercel AI Gateway API key</label></h2>
+        <span class="spacer"></span>
+        <a class="hint" href="https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai-gateway%2Fapi-keys%3FshowCreateKeyModal" target="_blank" rel="noreferrer">Get a key ↗</a>
+      </div>
+      <div class="key">
+        <input id="apiKey" type="password" placeholder="Paste your key here — vck_…" autocomplete="off" spellcheck="false">
+        <button class="btn" id="toggleKey" type="button">Show</button>
+        <label class="remember" title="Stores the key in this browser's localStorage"><input type="checkbox" id="rememberKey"> Remember</label>
+      </div>
+      <div class="hint" id="keyHint" style="margin-top:6px"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Presets</h2>
+      </div>
+      <div class="presets" id="presets"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>State</h2>
+        <span class="hint">what Jev looks at — 32K-token context</span>
+        <span class="spacer"></span>
+        <div class="seg" id="stateMode">
+          <button type="button" data-mode="text" aria-pressed="true">Text</button>
+          <button type="button" data-mode="json" aria-pressed="false">JSON</button>
+        </div>
+      </div>
+      <textarea id="state" spellcheck="false" placeholder="Paste a ticket, a transcript, an agent's scratchpad, a JSON record…"></textarea>
+      <div class="hint" id="stateHint" style="margin-top:6px"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Questions</h2>
+        <span class="hint">all answered in one parallel pass</span>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-add="boolean">+ Boolean</button>
+        <button class="btn" type="button" data-add="choice">+ Choice</button>
+        <button class="btn" type="button" data-add="score">+ Score</button>
+      </div>
+      <div id="questions"></div>
+    </div>
+
+    <div class="panel runbar">
+      <button class="btn primary" id="run" type="button">Evaluate</button>
+      <span><kbd>⌘</kbd> <kbd>↵</kbd></span>
+      <span class="spacer" style="flex:1"></span>
+      <label class="threshold" title="Answers whose top probability is below this are flagged for review">
+        Auto-accept ≥ <input type="range" id="threshold" min="50" max="100" value="90"> <span class="mono" id="thresholdVal">90%</span>
+      </label>
+      <label class="check" title="Sends providerOptions.gateway.zeroDataRetention = true"><input type="checkbox" id="zdr"> Zero data retention</label>
+    </div>
+  </section>
+
+  <!-- ============ OUTPUT ============ -->
+  <section class="col">
+    <div class="panel">
+      <div class="metrics">
+        <div class="metric"><div class="v" id="mLatency">—</div><div class="k">Round trip</div></div>
+        <div class="metric"><div class="v" id="mIn">—</div><div class="k">Input tokens</div></div>
+        <div class="metric"><div class="v" id="mOut">—</div><div class="k">Output tokens</div></div>
+        <div class="metric"><div class="v" id="mCost">—</div><div class="k">Est. cost</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" data-tab="answers" aria-selected="true">Answers</button>
+        <button role="tab" data-tab="request" aria-selected="false">Request</button>
+        <button role="tab" data-tab="response" aria-selected="false">Response</button>
+        <button role="tab" data-tab="code" aria-selected="false">Code</button>
+        <button class="btn share" id="share" type="button" disabled title="Share this result as an image">Share ↗</button>
+      </div>
+      <div id="tab-answers"></div>
+      <div id="tab-request" hidden></div>
+      <div id="tab-response" hidden></div>
+      <div id="tab-code" hidden></div>
+    </div>
+
+    <div class="panel" id="historyPanel" hidden>
+      <div class="panel-head">
+        <h2>Runs</h2>
+        <span class="hint">this session only</span>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="clearHistory" type="button">Clear</button>
+      </div>
+      <div class="history" id="history"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="shareDialog" aria-labelledby="shareTitle">
+  <div class="share-body">
+    <div class="share-head">
+      <h3 id="shareTitle">Share this result</h3>
+      <button class="btn icon" id="shareClose" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="share-preview"><img id="shareImg" alt="Preview of the shareable result card"></div>
+    <div class="share-opts">
+      <label class="check"><input type="checkbox" id="shareIncludeState" checked> Show the state text</label>
+    </div>
+    <div class="share-actions">
+      <button class="btn primary" id="shareCopy" type="button">Copy image</button>
+      <button class="btn" id="shareDownload" type="button">Download PNG</button>
+      <button class="btn" id="shareLink" type="button" title="A link that reopens this state and these questions. Never includes your API key.">Copy setup link</button>
+      <button class="btn" id="shareNative" type="button" hidden>Share…</button>
+      <span class="status" id="shareStatus" role="status"></span>
+    </div>
+    <div class="hint" id="shareHint"></div>
+  </div>
+</dialog>
+
+<footer>
+  Runs entirely in your browser. The key is sent only to <code>ai-gateway.vercel.sh</code>. Cost is estimated at $0.042 per 1M input tokens; output is free.
+  <a href="https://github.com/terryds/jevplayground" target="_blank" rel="noreferrer">Source on GitHub</a> ·
+  <a href="https://vercel.com/docs/ai-gateway/modalities/evaluation" target="_blank" rel="noreferrer">Evaluation docs</a> ·
+  <a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev" target="_blank" rel="noreferrer">About Jev</a>
+</footer>
+
+<script>
+'use strict';
+
+const MODEL_ID = 'typesafe-ai/jev';
+const ENDPOINT = 'https://ai-gateway.vercel.sh/v4/ai/evaluation-model';
+const INPUT_USD_PER_TOKEN = 0.042 / 1e6;
+const KEY_STORAGE = 'jev-playground:key';
+const DRAFT_STORAGE = 'jev-playground:draft';
+
+const $ = (sel, root = document) => root.querySelector(sel);
+
+// Tiny DOM builder: h('div', {class: 'x', onclick: fn}, child, 'text', ...)
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (k === 'value') el.value = v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of children.flat(Infinity)) {
+    if (c == null || c === false) continue;
+    el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+  return el;
+}
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+
+/* ------------------------------------------------------------------ presets */
+
+const PRESETS = [
+  {
+    name: 'Support triage',
+    stateMode: 'text',
+    state: "Hi — I was charged twice for order #A-4471 yesterday and now I can't log in to check the status. This is the third time I'm writing. Please fix this today or refund me.",
+    questions: [
+      { key: 'route', type: 'choice', instructions: 'Route this support ticket to a team.',
+        options: [['billing', 'payment or charge problems'], ['account', 'login, password, or access problems'], ['shipping', 'delivery problems'], ['technical', 'application bugs']] },
+      { key: 'urgency', type: 'score', instructions: 'How urgent is this ticket?',
+        levels: ['low: can wait days', 'medium: reply within a day', 'high: needs action today'] },
+      { key: 'wantsRefund', type: 'boolean', instructions: 'Is the customer asking for a refund?' },
+    ],
+  },
+  {
+    name: 'Agent loop',
+    stateMode: 'json',
+    state: {
+      goal: 'Find the cheapest direct flight SIN → NRT on Oct 12 and hold it',
+      step: 4,
+      lastToolCall: { tool: 'search_flights', args: { from: 'SIN', to: 'NRT', date: '2026-10-12', direct: true } },
+      lastToolResult: { error: 'upstream timeout after 10s', retryable: true },
+      previousAttempts: 1,
+    },
+    questions: [
+      { key: 'nextAction', type: 'choice', instructions: 'What should the agent do next?',
+        options: [['continue', 'proceed to the next planned step'], ['retry', 'repeat the last tool call'], ['ask_user', 'the agent is blocked on information only the user has'], ['stop', 'the goal is achieved or cannot be achieved']] },
+      { key: 'goalReached', type: 'boolean', instructions: 'Has the goal been fully achieved?' },
+      { key: 'risk', type: 'score', instructions: 'How risky is it to take the next action without human approval?',
+        levels: ['none: read-only', 'low: reversible', 'high: spends money or is irreversible'] },
+    ],
+  },
+  {
+    name: 'Output guardrail',
+    stateMode: 'json',
+    state: {
+      context: 'Refund policy: purchases can be refunded within 30 days. Gift cards are non-refundable.',
+      userQuestion: 'Can I get my money back for a gift card I bought last week?',
+      modelAnswer: "Absolutely! All purchases, including gift cards, are refundable within 30 days. I've emailed confirmation to jane.doe@example.com.",
+    },
+    questions: [
+      { key: 'grounded', type: 'boolean', instructions: 'Is modelAnswer fully supported by context?',
+        boolTrue: 'every claim in the answer is backed by the context', boolFalse: 'any claim contradicts or goes beyond the context' },
+      { key: 'containsPII', type: 'boolean', instructions: 'Does modelAnswer contain personal data such as an email, phone number, or address?' },
+      { key: 'verdict', type: 'choice', instructions: 'What should happen to this answer?',
+        options: [['send', 'safe and correct, deliver it'], ['regenerate', 'wrong or unsafe, try again'], ['escalate', 'needs a human']] },
+    ],
+  },
+  {
+    name: 'PR review',
+    stateMode: 'text',
+    state: "Title: Fix race in session refresh\n\nAdds a mutex around token refresh so concurrent requests share one refresh call. Includes a regression test that fires 50 parallel requests, and updates the auth README. No API changes.\n\nFiles: auth/session.ts (+41 −12), auth/session.test.ts (+66), docs/auth.md (+9)",
+    questions: [
+      { key: 'quality', type: 'score', instructions: 'Rate the quality of this pull request.',
+        levels: ['poor: no tests or docs', 'fair: partial coverage', 'good: tests and docs', 'excellent: tests, docs, and clear rationale'] },
+      { key: 'needsSecurityReview', type: 'boolean', instructions: 'Does this change touch authentication, secrets, or permissions?' },
+    ],
+  },
+  {
+    name: 'Vibe check', fun: true,
+    stateMode: 'text',
+    state: "just mass-unfollowed 400 people, deleted every app except Notes, and started waking up at 5am to journal. this is my year. again.",
+    questions: [
+      { key: 'vibe', type: 'choice', instructions: 'What is the overall vibe of the person who wrote this?',
+        options: [['main_character', 'dramatic, sees life as a movie about them'], ['villain_arc', 'done being nice, plotting'], ['golden_retriever', 'pure, enthusiastic, harmless'], ['npc', 'generic, on autopilot'], ['burnt_out', 'tired, running on fumes']] },
+      { key: 'cringe', type: 'score', instructions: 'How cringe is this post?',
+        levels: ['none: genuinely cool', 'mild: a little try-hard', 'strong: hard to read', 'terminal: screenshot and send to the group chat'] },
+      { key: 'willStickToIt', type: 'boolean', instructions: 'Will this person still be doing this in two weeks?' },
+    ],
+  },
+  {
+    name: 'Startup idea', fun: true,
+    stateMode: 'text',
+    state: "Uber for dog walkers, but the dogs are also on the blockchain and an AI agent negotiates the walk price with your dog's AI agent. Pre-revenue, pre-product, two co-founders who met last week.",
+    questions: [
+      { key: 'fundability', type: 'score', instructions: 'How likely is this startup to raise a seed round?',
+        levels: ['no chance', 'a friends-and-family round at best', 'plausible with a good deck', 'term sheets by Friday'] },
+      { key: 'fate', type: 'choice', instructions: 'What is the most likely fate of this company?',
+        options: [['unicorn', 'becomes a billion-dollar company'], ['acquihire', 'team gets bought for talent'], ['pivot', 'abandons the idea for something else'], ['zombie', 'limps along for years'], ['dead_in_18_months', 'runs out of money and shuts down']] },
+      { key: 'buzzwordOverload', type: 'boolean', instructions: 'Does the pitch rely on buzzwords more than substance?' },
+    ],
+  },
+  {
+    name: 'Am I the jerk?', fun: true,
+    stateMode: 'text',
+    state: "My roommate labelled her oat milk with her name. I used a splash for my coffee every morning for a month and replaced the whole carton at the end. She says that's stealing, I say she came out ahead because the new carton was full.",
+    questions: [
+      { key: 'verdict', type: 'choice', instructions: 'Who is in the wrong here?',
+        options: [['not_the_jerk', 'the narrator did nothing wrong'], ['the_jerk', 'the narrator is in the wrong'], ['everyone', 'both sides behaved badly'], ['no_one', 'an honest misunderstanding']] },
+      { key: 'drama', type: 'score', instructions: 'How dramatic is this conflict?',
+        levels: ['trivial', 'group-chat worthy', 'friendship-ending', 'call a lawyer'] },
+      { key: 'shouldApologize', type: 'boolean', instructions: 'Should the narrator apologize?' },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------------ model */
+
+let uid = 0;
+function makeQuestion(type, init = {}) {
+  return {
+    id: ++uid,
+    key: init.key ?? '',
+    type,
+    instructions: init.instructions ?? '',
+    boolTrue: init.boolTrue ?? '',
+    boolFalse: init.boolFalse ?? '',
+    options: (init.options ?? [['', ''], ['', '']]).map(([name, desc]) => ({ name, desc })),
+    levels: [...(init.levels ?? ['', ''])],
+  };
+}
+
+const app = {
+  stateMode: 'text',
+  questions: [],
+  runs: [],       // {at, ok, latency, request, response, error, questions}
+  selected: -1,
+  tab: 'answers',
+  busy: false,
+};
+
+function loadPreset(p) {
+  app.stateMode = p.stateMode;
+  $('#state').value = typeof p.state === 'string' ? p.state : JSON.stringify(p.state, null, 2);
+  app.questions = p.questions.map(q => makeQuestion(q.type, q));
+  renderStateMode();
+  renderQuestions();
+  saveDraft();
+  renderCode();
+}
+
+function saveDraft() {
+  store.set(DRAFT_STORAGE, JSON.stringify({
+    stateMode: app.stateMode, state: $('#state').value, questions: app.questions,
+    threshold: $('#threshold').value, zdr: $('#zdr').checked,
+  }));
+}
+
+function restoreDraft() {
+  try {
+    const d = JSON.parse(store.get(DRAFT_STORAGE));
+    if (!d || !Array.isArray(d.questions) || !d.questions.length) return false;
+    app.stateMode = d.stateMode === 'json' ? 'json' : 'text';
+    $('#state').value = d.state ?? '';
+    app.questions = d.questions.map(q => ({ ...makeQuestion(q.type), ...q, id: ++uid }));
+    if (d.threshold) $('#threshold').value = d.threshold;
+    $('#zdr').checked = !!d.zdr;
+    return true;
+  } catch { return false; }
+}
+
+/* ------------------------------------------------------------------ shareable setup (never includes the API key) */
+
+function snapshotSetup() {
+  return {
+    m: app.stateMode,
+    s: $('#state').value,
+    q: app.questions.map(({ key, type, instructions, boolTrue, boolFalse, options, levels }) =>
+      ({ key, type, instructions, boolTrue, boolFalse, options, levels })),
+  };
+}
+
+function applySetup(d) {
+  if (!d || !Array.isArray(d.q)) return false;
+  const str = v => (v == null ? '' : String(v));
+  const questions = d.q.slice(0, 20)
+    .filter(q => q && ['boolean', 'choice', 'score'].includes(q.type))
+    .map(q => makeQuestion(q.type, {
+      key: str(q.key), instructions: str(q.instructions), boolTrue: str(q.boolTrue), boolFalse: str(q.boolFalse),
+      options: Array.isArray(q.options) ? q.options.map(o => [str(o?.name), str(o?.desc)]) : undefined,
+      levels: Array.isArray(q.levels) ? q.levels.map(str) : undefined,
+    }));
+  if (!questions.length) return false;
+  app.stateMode = d.m === 'json' ? 'json' : 'text';
+  $('#state').value = str(d.s);
+  app.questions = questions;
+  return true;
+}
+
+function encodeSetup(setup) {
+  const bytes = new TextEncoder().encode(JSON.stringify(setup));
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function decodeSetup(str) {
+  const bin = atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+  return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+}
+
+function restoreFromLink() {
+  if (!location.hash.startsWith('#s=')) return false;
+  try {
+    const ok = applySetup(decodeSetup(location.hash.slice(3)));
+    history.replaceState(null, '', location.pathname + location.search);
+    if (ok) saveDraft();
+    return ok;
+  } catch { return false; }
+}
+
+/* ------------------------------------------------------------------ building the request */
+
+// Returns {state, questions} or throws Error with a user-facing message.
+function buildPayload() {
+  const raw = $('#state').value;
+  let state;
+  if (app.stateMode === 'json') {
+    try { state = JSON.parse(raw); } catch (e) { throw new Error('State is not valid JSON: ' + e.message); }
+    if (state === null || typeof state !== 'object') throw new Error('JSON state must be an object or an array.');
+  } else {
+    state = raw;
+    if (!state.trim()) throw new Error('State is empty.');
+  }
+
+  if (!app.questions.length) throw new Error('Add at least one question.');
+  const questions = {};
+  for (const q of app.questions) {
+    const key = q.key.trim();
+    if (!key) throw new Error('Every question needs a key.');
+    if (Object.hasOwn(questions, key)) throw new Error(`Duplicate question key "${key}".`);
+    if (!q.instructions.trim()) throw new Error(`Question "${key}" needs instructions.`);
+    const out = { type: q.type, instructions: q.instructions.trim() };
+
+    if (q.type === 'boolean') {
+      const criteria = {};
+      if (q.boolTrue.trim()) criteria.true = q.boolTrue.trim();
+      if (q.boolFalse.trim()) criteria.false = q.boolFalse.trim();
+      if (Object.keys(criteria).length) out.criteria = criteria;
+    } else if (q.type === 'choice') {
+      const criteria = {};
+      for (const o of q.options) {
+        const name = o.name.trim();
+        if (!name) continue;
+        if (Object.hasOwn(criteria, name)) throw new Error(`Question "${key}" has duplicate option "${name}".`);
+        criteria[name] = o.desc.trim() || null;
+      }
+      if (Object.keys(criteria).length < 2) throw new Error(`Choice question "${key}" needs at least two named options.`);
+      out.criteria = criteria;
+    } else {
+      const levels = q.levels.map(l => l.trim()).filter(Boolean);
+      if (levels.length < 2) throw new Error(`Score question "${key}" needs at least two levels.`);
+      out.criteria = levels;
+    }
+    questions[key] = out;
+  }
+
+  const body = { state, questions };
+  if ($('#zdr').checked) body.providerOptions = { gateway: { zeroDataRetention: true } };
+  return body;
+}
+
+/* ------------------------------------------------------------------ calling the gateway */
+
+async function run() {
+  if (app.busy) return;
+  const apiKey = $('#apiKey').value.trim();
+  let body;
+  try {
+    if (!apiKey) { nudgeKey(); throw new Error('Paste your Vercel AI Gateway API key in Step 1 first.'); }
+    body = buildPayload();
+  } catch (e) {
+    pushRun({ ok: false, error: e.message, local: true });
+    return;
+  }
+
+  app.busy = true;
+  $('#run').disabled = true;
+  $('#run').textContent = 'Evaluating…';
+  const started = performance.now();
+  const record = { request: body, questions: body.questions, setup: snapshotSetup() };
+
+  try {
+    // Same wire call @ai-sdk/gateway makes for gateway.evaluationModel(...).
+    // The SDK's ai-evaluation-model-specification-version header is left out:
+    // the gateway's CORS preflight does not allow it, and it is not required.
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'ai-gateway-protocol-version': '0.0.1',
+        'ai-gateway-auth-method': 'api-key',
+        'ai-model-id': MODEL_ID,
+      },
+      body: JSON.stringify(body),
+    });
+    record.latency = performance.now() - started;
+    record.status = res.status;
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch {}
+    record.response = json ?? text;
+
+    if (!res.ok) {
+      const msg = json?.error?.message ?? json?.message ?? (text || res.statusText);
+      record.ok = false;
+      record.error = `${res.status} ${json?.error?.type ?? ''}`.trim() + '\n' + msg;
+    } else if (!json || typeof json.answers !== 'object') {
+      record.ok = false;
+      record.error = 'The gateway returned a response without an "answers" object. See the Response tab.';
+    } else {
+      record.ok = true;
+    }
+  } catch (e) {
+    record.latency = performance.now() - started;
+    record.ok = false;
+    record.error = 'Network error: ' + e.message +
+      '\nThe browser could not reach ai-gateway.vercel.sh. Check your connection, or an extension / proxy blocking the request.';
+  } finally {
+    app.busy = false;
+    $('#run').disabled = false;
+    $('#run').textContent = 'Evaluate';
+  }
+  pushRun(record);
+}
+
+function pushRun(record) {
+  record.at = new Date();
+  record.threshold = Number($('#threshold').value) / 100;
+  app.runs.push(record);
+  if (app.runs.length > 30) app.runs.shift();
+  app.selected = app.runs.length - 1;
+  if (!record.ok) app.tab = 'answers';
+  renderAll();
+}
+
+/* ------------------------------------------------------------------ rendering: input side */
+
+function renderPresets() {
+  const button = p => h('button', { class: 'btn', type: 'button', onclick: () => loadPreset(p) }, p.name);
+  $('#presets').replaceChildren(
+    h('span', { class: 'group-label' }, 'For work'),
+    h('div', { class: 'group' }, PRESETS.filter(p => !p.fun).map(button)),
+    h('span', { class: 'group-label' }, 'For fun'),
+    h('div', { class: 'group' }, PRESETS.filter(p => p.fun).map(button)));
+}
+
+function renderStateMode() {
+  for (const b of $('#stateMode').children) b.setAttribute('aria-pressed', String(b.dataset.mode === app.stateMode));
+  validateState();
+}
+
+function validateState() {
+  const hint = $('#stateHint');
+  if (app.stateMode !== 'json') { hint.textContent = 'Sent as a plain string.'; hint.style.color = ''; return; }
+  try {
+    const v = JSON.parse($('#state').value);
+    if (v === null || typeof v !== 'object') throw new Error('must be an object or array');
+    hint.textContent = `Valid JSON ${Array.isArray(v) ? 'array' : 'object'} — sent structured, not stringified.`;
+    hint.style.color = '';
+  } catch (e) {
+    hint.textContent = 'Invalid JSON: ' + e.message;
+    hint.style.color = 'var(--bad)';
+  }
+}
+
+function onEdit() { saveDraft(); renderCode(); }
+
+function bind(obj, prop, attrs, tag = 'input') {
+  return h(tag, { ...attrs, value: obj[prop], oninput: e => { obj[prop] = e.target.value; onEdit(); } });
+}
+
+function renderQuestions() {
+  const root = $('#questions');
+  if (!app.questions.length) {
+    root.replaceChildren(h('div', { class: 'hint' }, 'No questions yet. Add a Boolean, Choice, or Score question.'));
+    return;
+  }
+  root.replaceChildren(...app.questions.map(q => {
+    const typeSel = h('select', { 'aria-label': 'Question type', onchange: e => { q.type = e.target.value; renderQuestions(); onEdit(); } },
+      ...['boolean', 'choice', 'score'].map(t => h('option', { value: t, selected: t === q.type }, t)));
+    return h('div', { class: 'q' },
+      h('div', { class: 'q-top' },
+        bind(q, 'key', { class: 'field key-name', placeholder: 'answerKey', 'aria-label': 'Question key', spellcheck: 'false' }),
+        typeSel,
+        h('button', { class: 'btn icon', type: 'button', title: 'Remove question',
+          onclick: () => { app.questions = app.questions.filter(x => x !== q); renderQuestions(); onEdit(); } }, '✕')),
+      bind(q, 'instructions', { rows: 2, placeholder: 'Instructions — what should Jev decide?', 'aria-label': 'Instructions' }, 'textarea'),
+      renderCriteria(q));
+  }));
+}
+
+function renderCriteria(q) {
+  if (q.type === 'boolean') {
+    return h('div', { class: 'crit' },
+      h('div', { class: 'crit-label' }, 'Criteria (optional)'),
+      h('div', { class: 'crit-row' }, h('span', { class: 'tf' }, 'true'), bind(q, 'boolTrue', { class: 'field', placeholder: 'what counts as true' })),
+      h('div', { class: 'crit-row' }, h('span', { class: 'tf' }, 'false'), bind(q, 'boolFalse', { class: 'field', placeholder: 'what counts as false' })));
+  }
+  const rerender = () => { renderQuestions(); onEdit(); };
+  if (q.type === 'choice') {
+    return h('div', { class: 'crit' },
+      h('div', { class: 'crit-label' }, 'Options'),
+      q.options.map((o, i) => h('div', { class: 'crit-row' },
+        bind(o, 'name', { class: 'field name', placeholder: 'option', spellcheck: 'false' }),
+        bind(o, 'desc', { class: 'field', placeholder: 'when to pick it (optional)' }),
+        h('button', { class: 'btn icon', type: 'button', title: 'Remove option', onclick: () => { q.options.splice(i, 1); rerender(); } }, '✕'))),
+      h('div', {}, h('button', { class: 'btn ghost', type: 'button', onclick: () => { q.options.push({ name: '', desc: '' }); rerender(); } }, '+ option')));
+  }
+  return h('div', { class: 'crit' },
+    h('div', { class: 'crit-label' }, 'Levels — lowest to highest'),
+    q.levels.map((_, i) => h('div', { class: 'crit-row' },
+      h('span', { class: 'rung' }, i),
+      h('input', { class: 'field', placeholder: 'label: description', value: q.levels[i], oninput: e => { q.levels[i] = e.target.value; onEdit(); } }),
+      h('button', { class: 'btn icon', type: 'button', title: 'Remove level', onclick: () => { q.levels.splice(i, 1); rerender(); } }, '✕'))),
+    h('div', {}, h('button', { class: 'btn ghost', type: 'button', onclick: () => { q.levels.push(''); rerender(); } }, '+ level')));
+}
+
+/* ------------------------------------------------------------------ rendering: output side */
+
+const pct = p => (p * 100).toFixed(p >= 0.9995 || p < 0.0005 ? 0 : 1) + '%';
+
+function distribution(entries, winner) {
+  return h('div', { class: 'dist' }, entries.map(([label, p, title]) => [
+    h('div', { class: 'lbl' + (label === winner ? ' win' : ''), title: title ?? label }, label),
+    h('div', { class: 'track' }, h('div', { class: 'fill' + (label === winner ? ' win' : ''), style: { width: (p * 100) + '%' } })),
+    h('div', { class: 'pct' }, pct(p)),
+  ]));
+}
+
+function answerCard(key, a, q, threshold) {
+  let confidence, body;
+  if (a.type === 'boolean') {
+    const p = a.probability;
+    confidence = Math.max(p, 1 - p);
+    body = [
+      h('div', { class: 'verdict' }, p >= 0.5 ? 'Yes' : 'No', h('small', {}, `P(true) = ${p}`)),
+      distribution([['true', p], ['false', 1 - p]], p >= 0.5 ? 'true' : 'false'),
+    ];
+  } else if (a.type === 'choice') {
+    const probs = a.probabilities ?? { [a.choice]: 1 };
+    confidence = probs[a.choice] ?? 1;
+    const order = Object.keys(q?.criteria ?? probs);
+    body = [
+      h('div', { class: 'verdict' }, a.choice),
+      distribution(order.filter(k => k in probs).map(k => [k, probs[k], q?.criteria?.[k] ?? k]), a.choice),
+    ];
+  } else {
+    const levels = q?.criteria ?? [];
+    const max = Math.max(levels.length - 1, 1);
+    const probs = a.probabilities ?? {};
+    const top = Object.entries(probs).sort((x, y) => y[1] - x[1])[0];
+    confidence = top ? top[1] : 1;
+    const left = Math.min(Math.max(a.score / max, 0), 1) * 100 + '%';
+    body = [
+      h('div', { class: 'verdict' }, a.score, h('small', {}, `of ${max} · ${levels[Math.round(a.score)] ?? ''}`)),
+      h('div', { class: 'scale' },
+        h('div', { class: 'rail' }),
+        levels.map((_, i) => h('div', { class: 'tick', style: { left: (i / max) * 100 + '%' } })),
+        h('div', { class: 'marker', style: { left } })),
+      distribution(Object.keys(probs).map(k => [`${k} · ${String(levels[k] ?? '').split(':')[0]}`, probs[k], levels[k]]),
+        top ? `${top[0]} · ${String(levels[top[0]] ?? '').split(':')[0]}` : null),
+    ];
+  }
+  const auto = confidence >= threshold;
+  return h('div', { class: 'answer' },
+    h('div', { class: 'answer-head' },
+      h('span', { class: 'name' }, key),
+      h('span', { class: 'tag' }, a.type),
+      h('span', { class: 'spacer', style: { flex: 1 } }),
+      h('span', { class: 'tag ' + (auto ? 'auto' : 'review'), title: `Top probability ${pct(confidence)} vs threshold ${pct(threshold)}` },
+        auto ? 'auto-accept' : 'needs review')),
+    h('div', { class: 'instr' }, typeof q?.instructions === 'string' ? q.instructions : ''),
+    body);
+}
+
+function codeBlock(text) {
+  const btn = h('button', { class: 'btn copy', type: 'button', onclick: async () => {
+    try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; } catch { btn.textContent = 'Copy failed'; }
+    setTimeout(() => (btn.textContent = 'Copy'), 1200);
+  } }, 'Copy');
+  return h('div', { class: 'code-wrap' }, h('pre', { class: 'code' }, text), btn);
+}
+
+function renderAnswers(run) {
+  const root = $('#tab-answers');
+  if (!run) {
+    root.replaceChildren(h('div', { class: 'empty' },
+      h('strong', {}, 'No decisions yet'),
+      'Jev is not a chat model. Give it some state and typed questions; it returns choices, scores, and probabilities in a single pass. Pick a preset and press Evaluate.'));
+    return;
+  }
+  const nodes = [];
+  if (run.error) nodes.push(h('div', { class: 'notice error' }, run.error));
+  if (run.ok) {
+    const threshold = Number($('#threshold').value) / 100;
+    for (const w of run.response.warnings ?? []) {
+      nodes.push(h('div', { class: 'notice warn' }, `Warning (${w.type}): ${w.message ?? w.details ?? w.feature ?? ''}`));
+    }
+    for (const [key, a] of Object.entries(run.response.answers)) nodes.push(answerCard(key, a, run.questions[key], threshold));
+    const meta = run.response.providerMetadata;
+    if (meta && Object.keys(meta).length) {
+      nodes.push(h('div', { class: 'sub' }, 'Provider metadata'), codeBlock(JSON.stringify(meta, null, 2)));
+    }
+  }
+  root.replaceChildren(...nodes);
+}
+
+function renderMetrics(run) {
+  const usage = run?.ok ? run.response.usage : null;
+  $('#mLatency').textContent = run?.latency != null ? Math.round(run.latency) + ' ms' : '—';
+  $('#mIn').textContent = usage?.inputTokens ?? '—';
+  $('#mOut').textContent = usage?.outputTokens ?? '—';
+  $('#mCost').textContent = usage?.inputTokens != null ? '$' + (usage.inputTokens * INPUT_USD_PER_TOKEN).toFixed(7) : '—';
+}
+
+function renderRaw(run) {
+  $('#tab-request').replaceChildren(run?.request
+    ? h('div', {}, h('div', { class: 'sub' }, 'POST ' + ENDPOINT), codeBlock(JSON.stringify(run.request, null, 2)))
+    : h('div', { class: 'empty' }, 'The request body appears here after a run.'));
+  $('#tab-response').replaceChildren(run?.response != null
+    ? h('div', {}, h('div', { class: 'sub' }, 'HTTP ' + run.status), codeBlock(typeof run.response === 'string' ? run.response : JSON.stringify(run.response, null, 2)))
+    : h('div', { class: 'empty' }, 'The raw gateway response appears here after a run.'));
+}
+
+// JS-literal pretty printer so the snippet reads like hand-written code.
+function toJs(v, indent = 1) {
+  const pad = '  '.repeat(indent), end = '  '.repeat(indent - 1);
+  if (typeof v === 'string') return "'" + v.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n') + "'";
+  if (v === null || typeof v !== 'object') return String(v);
+  if (Array.isArray(v)) return v.length ? '[\n' + v.map(x => pad + toJs(x, indent + 1) + ',\n').join('') + end + ']' : '[]';
+  const keys = Object.keys(v);
+  if (!keys.length) return '{}';
+  return '{\n' + keys.map(k => pad + (/^[A-Za-z_$][\w$]*$/.test(k) ? k : toJs(k)) + ': ' + toJs(v[k], indent + 1) + ',\n').join('') + end + '}';
+}
+
+function renderCode() {
+  let body;
+  try { body = buildPayload(); } catch (e) {
+    $('#tab-code').replaceChildren(h('div', { class: 'empty' }, 'Fix the input to generate code: ' + e.message));
+    return;
+  }
+  const sdk =
+`import { experimental_evaluate as evaluate } from 'ai'; // AI SDK 7+
+
+const result = await evaluate({
+  model: '${MODEL_ID}',
+  state: ${toJs(body.state, 2)},
+  questions: ${toJs(body.questions, 2)},${body.providerOptions ? `\n  providerOptions: ${toJs(body.providerOptions, 2)},` : ''}
+});
+
+console.log(result.answers, result.usage);`;
+  const curl =
+`curl ${ENDPOINT} \\
+  -H "Authorization: Bearer $AI_GATEWAY_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -H "ai-gateway-protocol-version: 0.0.1" \\
+  -H "ai-gateway-auth-method: api-key" \\
+  -H "ai-model-id: ${MODEL_ID}" \\
+  -d '${JSON.stringify(body).replace(/'/g, `'\\''`)}'`;
+  $('#tab-code').replaceChildren(
+    h('div', { class: 'sub' }, 'AI SDK (server-side, reads AI_GATEWAY_API_KEY)'), codeBlock(sdk),
+    h('div', { class: 'sub' }, 'curl'), codeBlock(curl));
+}
+
+function renderTabs() {
+  for (const b of $('#tabs').querySelectorAll('[data-tab]')) {
+    const on = b.dataset.tab === app.tab;
+    b.setAttribute('aria-selected', String(on));
+    $('#tab-' + b.dataset.tab).hidden = !on;
+  }
+}
+
+function renderHistory() {
+  $('#historyPanel').hidden = app.runs.length === 0;
+  $('#history').replaceChildren(...app.runs.map((r, i) =>
+    h('button', {
+      type: 'button', class: r.ok ? '' : 'err', 'aria-pressed': String(i === app.selected),
+      title: r.at.toLocaleTimeString(),
+      onclick: () => { app.selected = i; renderAll(); },
+    }, `#${i + 1} ` + (r.ok ? Math.round(r.latency) + ' ms' : r.local ? 'invalid' : 'error'))));
+}
+
+function renderAll() {
+  const run = app.runs[app.selected];
+  renderMetrics(run);
+  renderAnswers(run);
+  renderRaw(run);
+  renderTabs();
+  renderHistory();
+  $('#share').disabled = !run?.ok;
+}
+
+/* ------------------------------------------------------------------ share card */
+
+// The card always uses the dark palette so shared images look the same everywhere.
+const CARD = { bg: '#0f100d', panel: '#171814', line: '#2e3128', text: '#ecebe3', muted: '#96968a', accent: '#b5ee5a', bar: '#3a3d32', track: '#1f211b' };
+const CARD_SANS = '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif';
+const CARD_MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+
+function wrapLines(ctx, text, maxW, maxLines) {
+  const lines = [];
+  let cur = '';
+  for (let word of String(text).replace(/\s+/g, ' ').trim().split(' ')) {
+    while (ctx.measureText(word).width > maxW) {       // hard-break words wider than the line
+      let i = word.length;
+      while (i > 1 && ctx.measureText(word.slice(0, i)).width > maxW) i--;
+      if (cur) { lines.push(cur); cur = ''; }
+      lines.push(word.slice(0, i));
+      word = word.slice(i);
+    }
+    const next = cur ? cur + ' ' + word : word;
+    if (ctx.measureText(next).width > maxW) { lines.push(cur); cur = word; } else cur = next;
+  }
+  if (cur) lines.push(cur);
+  if (lines.length > maxLines) {
+    lines.length = maxLines;
+    lines[maxLines - 1] = fitText(ctx, lines[maxLines - 1] + '…', maxW, true);
+  }
+  return lines;
+}
+
+function fitText(ctx, text, maxW, force) {
+  if (!force && ctx.measureText(text).width <= maxW) return text;
+  let t = text.replace(/…$/, '');
+  while (t && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+  return t.trimEnd() + '…';
+}
+
+function pill(ctx, x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, h / 2);
+  ctx.fill();
+}
+
+function drawCard(run, { includeState }) {
+  const W = 1200, P = 64, S = 2, MAX_H = 5000, inner = W - 2 * P;
+  const scratch = document.createElement('canvas');
+  scratch.width = W * S; scratch.height = MAX_H * S;
+  const ctx = scratch.getContext('2d');
+  ctx.scale(S, S);
+  ctx.fillStyle = CARD.bg;
+  ctx.fillRect(0, 0, W, MAX_H);
+  ctx.textBaseline = 'alphabetic';
+  let y = P;
+
+  // header
+  ctx.font = `700 28px ${CARD_SANS}`; ctx.fillStyle = CARD.text; ctx.textAlign = 'left';
+  ctx.fillText('⚖️  Jev Playground', P, y + 24);
+  ctx.font = `20px ${CARD_MONO}`; ctx.fillStyle = CARD.muted; ctx.textAlign = 'right';
+  ctx.fillText(MODEL_ID, W - P, y + 22);
+  ctx.textAlign = 'left';
+  y += 64;
+
+  if (includeState) {
+    const state = run.request.state;
+    ctx.font = `24px ${CARD_SANS}`;
+    const lines = wrapLines(ctx, typeof state === 'string' ? state : JSON.stringify(state), inner - 64, 5);
+    const boxH = lines.length * 35 + 44;
+    ctx.fillStyle = CARD.panel; ctx.beginPath(); ctx.roundRect(P, y, inner, boxH, 16); ctx.fill();
+    ctx.fillStyle = CARD.accent; ctx.beginPath(); ctx.roundRect(P, y, 6, boxH, [16, 0, 0, 16]); ctx.fill();
+    ctx.fillStyle = CARD.text;
+    lines.forEach((line, i) => ctx.fillText(line, P + 34, y + 50 + i * 35));
+    y += boxH + 40;
+  }
+
+  const row = (label, p, win) => {
+    const labelW = 400, pctW = 90, barX = P + labelW + 20, barW = inner - labelW - 20 - pctW;
+    ctx.font = `${win ? 700 : 400} 22px ${CARD_MONO}`; ctx.fillStyle = win ? CARD.text : CARD.muted;
+    ctx.fillText(fitText(ctx, label, labelW), P, y + 17);
+    pill(ctx, barX, y + 3, barW, 16, CARD.track);
+    if (p > 0) pill(ctx, barX, y + 3, Math.max(barW * p, 16), 16, win ? CARD.accent : CARD.bar);
+    ctx.font = `20px ${CARD_MONO}`; ctx.fillStyle = CARD.muted; ctx.textAlign = 'right';
+    ctx.fillText(pct(p), W - P, y + 17);
+    ctx.textAlign = 'left';
+    y += 34;
+  };
+
+  const entries = Object.entries(run.response.answers);
+  entries.slice(0, 6).forEach(([key, a], idx) => {
+    const q = run.questions[key];
+    if (idx > 0) { ctx.fillStyle = CARD.line; ctx.fillRect(P, y, inner, 1); y += 36; }
+
+    ctx.font = `600 22px ${CARD_MONO}`; ctx.fillStyle = CARD.accent;
+    ctx.fillText(fitText(ctx, key, inner - 140), P, y + 18);
+    ctx.font = `16px ${CARD_SANS}`; ctx.fillStyle = CARD.muted; ctx.textAlign = 'right';
+    ctx.fillText(a.type.toUpperCase(), W - P, y + 16);
+    ctx.textAlign = 'left';
+    y += 34;
+
+    if (typeof q?.instructions === 'string') {
+      ctx.font = `22px ${CARD_SANS}`; ctx.fillStyle = CARD.muted;
+      for (const line of wrapLines(ctx, q.instructions, inner, 2)) { ctx.fillText(line, P, y + 20); y += 30; }
+    }
+    y += 10;
+
+    const verdict = (big, small) => {
+      ctx.font = `700 46px ${CARD_SANS}`; ctx.fillStyle = CARD.text;
+      big = fitText(ctx, big, inner * 0.6);
+      ctx.fillText(big, P, y + 42);
+      const bw = ctx.measureText(big).width;
+      if (small) {
+        ctx.font = `22px ${CARD_MONO}`; ctx.fillStyle = CARD.muted;
+        ctx.fillText(fitText(ctx, small, inner - bw - 20), P + bw + 18, y + 40);
+      }
+      y += 66;
+    };
+
+    if (a.type === 'boolean') {
+      const p = a.probability;
+      verdict(p >= 0.5 ? 'Yes' : 'No', `${pct(p >= 0.5 ? p : 1 - p)} sure`);
+      row('true', p, p >= 0.5);
+      row('false', 1 - p, p < 0.5);
+    } else if (a.type === 'choice') {
+      const probs = a.probabilities ?? { [a.choice]: 1 };
+      verdict(a.choice, `${pct(probs[a.choice] ?? 1)}`);
+      let keys = Object.keys(q?.criteria ?? probs).filter(k => k in probs);
+      if (keys.length > 6) keys = keys.sort((m, n) => probs[n] - probs[m]).slice(0, 6);
+      for (const k of keys) row(k, probs[k], k === a.choice);
+    } else {
+      const levels = q?.criteria ?? [];
+      const max = Math.max(levels.length - 1, 1);
+      const name = i => String(levels[i] ?? '').split(':')[0];
+      verdict(`${a.score} / ${max}`, name(Math.round(a.score)));
+      // scale
+      const t = Math.min(Math.max(a.score / max, 0), 1);
+      pill(ctx, P, y + 8, inner, 6, CARD.track);
+      ctx.fillStyle = CARD.bar;
+      levels.forEach((_, i) => ctx.fillRect(P + (inner * i) / max - 1, y + 2, 2, 18));
+      ctx.fillStyle = CARD.bg; ctx.beginPath(); ctx.arc(P + inner * t, y + 11, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = CARD.accent; ctx.beginPath(); ctx.arc(P + inner * t, y + 11, 11, 0, Math.PI * 2); ctx.fill();
+      y += 44;
+      const probs = a.probabilities ?? {};
+      const top = Object.entries(probs).sort((m, n) => n[1] - m[1])[0]?.[0];
+      for (const k of Object.keys(probs).slice(0, 7)) row(`${k} · ${name(k)}`, probs[k], k === top);
+    }
+    y += 26;
+  });
+  if (entries.length > 6) {
+    ctx.font = `20px ${CARD_SANS}`; ctx.fillStyle = CARD.muted;
+    ctx.fillText(`+ ${entries.length - 6} more answers`, P, y + 16);
+    y += 40;
+  }
+
+  // footer
+  ctx.fillStyle = CARD.line; ctx.fillRect(P, y, inner, 1); y += 40;
+  const usage = run.response.usage ?? {};
+  const bits = [`Decided in ${Math.round(run.latency)} ms`];
+  if (usage.inputTokens != null) bits.push(`${usage.inputTokens} tokens`, '$' + (usage.inputTokens * INPUT_USD_PER_TOKEN).toFixed(7));
+  ctx.font = `20px ${CARD_MONO}`; ctx.fillStyle = CARD.muted;
+  ctx.fillText(bits.join('  ·  '), P, y + 8);
+  const hosted = location.protocol === 'https:' && !/^(localhost|127\.)/.test(location.hostname);
+  ctx.textAlign = 'right';
+  ctx.fillText(hosted ? location.host + location.pathname.replace(/\/(index\.html)?$/, '') : 'one pass · no text generated', W - P, y + 8);
+  ctx.textAlign = 'left';
+  y += 8 + P - 16;
+
+  const out = document.createElement('canvas');
+  out.width = W * S; out.height = Math.min(y, MAX_H) * S;
+  out.getContext('2d').drawImage(scratch, 0, 0);
+  return out;
+}
+
+const share = { run: null, blob: null, url: null };
+
+function cardBlob() {
+  const canvas = drawCard(share.run, { includeState: $('#shareIncludeState').checked });
+  return new Promise((resolve, reject) => canvas.toBlob(b => (b ? resolve(b) : reject(new Error('Could not render the image.'))), 'image/png'));
+}
+
+async function refreshShare() {
+  share.blob = await cardBlob();
+  if (share.url) URL.revokeObjectURL(share.url);
+  share.url = URL.createObjectURL(share.blob);
+  $('#shareImg').src = share.url;
+}
+
+function shareStatus(msg) {
+  $('#shareStatus').textContent = msg;
+  clearTimeout(shareStatus.t);
+  shareStatus.t = setTimeout(() => ($('#shareStatus').textContent = ''), 2500);
+}
+
+function setupLink() {
+  return location.origin + location.pathname + location.search + '#s=' + encodeSetup(share.run.setup);
+}
+
+async function openShare() {
+  const run = app.runs[app.selected];
+  if (!run?.ok) return;
+  share.run = run;
+  const local = location.protocol === 'file:' || /^(localhost|127\.)/.test(location.hostname);
+  $('#shareHint').textContent = local
+    ? 'The image works anywhere. The setup link points at this local page, so it only opens for other people once the playground is hosted.'
+    : 'The setup link reopens this state and these questions. Your API key is never included.';
+  const file = new File([new Blob()], 'jev.png', { type: 'image/png' });
+  $('#shareNative').hidden = !(navigator.canShare && navigator.canShare({ files: [file] }));
+  await refreshShare();
+  $('#shareDialog').showModal();
+}
+
+$('#share').addEventListener('click', openShare);
+$('#shareClose').addEventListener('click', () => $('#shareDialog').close());
+$('#shareDialog').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+$('#shareIncludeState').addEventListener('change', refreshShare);
+
+$('#shareCopy').addEventListener('click', async () => {
+  try {
+    // Safari only allows a clipboard write when the blob is passed as a promise inside the click.
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': share.blob ? Promise.resolve(share.blob) : cardBlob() })]);
+    shareStatus('Image copied — paste it anywhere.');
+  } catch {
+    shareStatus('Copy is blocked here — use Download, or right-click the preview.');
+  }
+});
+$('#shareDownload').addEventListener('click', () => {
+  h('a', { href: share.url, download: `jev-${Date.now()}.png` }).click();
+  shareStatus('Saved.');
+});
+$('#shareLink').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(setupLink()); shareStatus('Link copied.'); }
+  catch { shareStatus('Copy is blocked in this browser.'); }
+});
+$('#shareNative').addEventListener('click', async () => {
+  try {
+    await navigator.share({ files: [new File([share.blob], 'jev.png', { type: 'image/png' })], text: 'Decided by Jev in one pass' });
+  } catch {}
+});
+
+/* ------------------------------------------------------------------ wiring */
+
+$('#stateMode').addEventListener('click', e => {
+  const mode = e.target.dataset?.mode;
+  if (!mode) return;
+  app.stateMode = mode;
+  renderStateMode();
+  onEdit();
+});
+$('#state').addEventListener('input', () => { validateState(); onEdit(); });
+
+document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => {
+  app.questions.push(makeQuestion(b.dataset.add));
+  renderQuestions();
+  onEdit();
+  $('#questions').lastElementChild.querySelector('input').focus();
+}));
+
+$('#tabs').addEventListener('click', e => {
+  if (!e.target.dataset?.tab) return;
+  app.tab = e.target.dataset.tab;
+  renderTabs();
+});
+
+$('#threshold').addEventListener('input', e => {
+  $('#thresholdVal').textContent = e.target.value + '%';
+  saveDraft();
+  renderAnswers(app.runs[app.selected]);
+});
+$('#zdr').addEventListener('change', onEdit);
+
+$('#run').addEventListener('click', run);
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); run(); }
+});
+
+$('#clearHistory').addEventListener('click', () => { app.runs = []; app.selected = -1; renderAll(); });
+
+// API key: kept in memory unless "Remember" is ticked.
+const keyInput = $('#apiKey'), remember = $('#rememberKey');
+const savedKey = store.get(KEY_STORAGE);
+if (savedKey) { keyInput.value = savedKey; remember.checked = true; }
+const syncKey = () => remember.checked ? store.set(KEY_STORAGE, keyInput.value.trim()) : store.del(KEY_STORAGE);
+function updateKeyState() {
+  const has = !!keyInput.value.trim();
+  $('#keyPanel').classList.toggle('empty', !has);
+  $('#keyHint').textContent = has
+    ? 'Key set. It stays in this browser and is sent only to ai-gateway.vercel.sh.'
+    : 'Required to run anything. It stays in this browser and is sent only to ai-gateway.vercel.sh.';
+  $('#keyChip').textContent = has ? '● API key set' : '● API key needed';
+  $('#keyChip').classList.toggle('missing', !has);
+}
+function nudgeKey() {
+  const panel = $('#keyPanel');
+  panel.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  keyInput.focus({ preventScroll: true });
+  panel.classList.remove('nudge');
+  void panel.offsetWidth;   // restart the animation
+  panel.classList.add('nudge');
+}
+$('#keyChip').addEventListener('click', nudgeKey);
+$('#keyChip').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nudgeKey(); } });
+keyInput.addEventListener('input', updateKeyState);
+updateKeyState();
+keyInput.addEventListener('input', syncKey);
+remember.addEventListener('change', syncKey);
+$('#toggleKey').addEventListener('click', e => {
+  const show = keyInput.type === 'password';
+  keyInput.type = show ? 'text' : 'password';
+  e.target.textContent = show ? 'Hide' : 'Show';
+});
+
+renderPresets();
+if (restoreFromLink() || restoreDraft()) { renderStateMode(); renderQuestions(); renderCode(); }
+else loadPreset(PRESETS[0]);
+$('#thresholdVal').textContent = $('#threshold').value + '%';
+renderAll();
+</script>
+</body>
+</html>
