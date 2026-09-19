@@ -506,18 +506,6 @@ const PRESETS = [
     ],
   },
   {
-    name: 'OTW', fun: true,
-    stateMode: 'text',
-    state: "Chat jam 19.02: \"otw ya, 5 menit lagi sampe\"",
-    questions: [
-      { key: 'posisiSebenarnya', type: 'choice', instructions: 'Di mana posisi orang ini sebenarnya saat mengirim chat?',
-        options: [['di_jalan', 'benar-benar sudah di perjalanan'], ['baru_mau_mandi', 'masih di rumah, baru mau siap-siap'], ['masih_rebahan', 'masih tiduran di kasur sambil main HP'], ['belum_bangun', 'baru bangun tidur gara-gara ditelepon']] },
-      { key: 'estimasiTiba', type: 'score', instructions: 'Kapan orang ini benar-benar akan sampai?',
-        levels: ['5 menit: sesuai janji', 'setengah jam lagi', 'abis isya', 'acaranya udah bubar'] },
-      { key: 'beneranOTW', type: 'boolean', instructions: 'Apakah orang ini benar-benar sudah di jalan?' },
-    ],
-  },
-  {
     name: 'Startup idea', fun: true,
     stateMode: 'text',
     state: "Airbnb, but we own the whole building. Every room has the same layout so guests know what to expect. There's a person at a desk in the lobby 24/7 to hand you your key. We clean the room every day while you're out, and there's a small fridge with drinks you can pay for later. Breakfast is included downstairs from 6 to 10. We're calling it a \"vertically integrated stay platform.\" Pre-seed, raising $4M.",
