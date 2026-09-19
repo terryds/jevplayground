@@ -506,27 +506,15 @@ const PRESETS = [
     ],
   },
   {
-    name: 'Vibe check', fun: true,
-    stateMode: 'text',
-    state: "just mass-unfollowed 400 people, deleted every app except Notes, and started waking up at 5am to journal. this is my year. again.",
-    questions: [
-      { key: 'vibe', type: 'choice', instructions: 'What is the overall vibe of the person who wrote this?',
-        options: [['main_character', 'dramatic, sees life as a movie about them'], ['villain_arc', 'done being nice, plotting'], ['golden_retriever', 'pure, enthusiastic, harmless'], ['npc', 'generic, on autopilot'], ['burnt_out', 'tired, running on fumes']] },
-      { key: 'cringe', type: 'score', instructions: 'How cringe is this post?',
-        levels: ['none: genuinely cool', 'mild: a little try-hard', 'strong: hard to read', 'terminal: screenshot and send to the group chat'] },
-      { key: 'willStickToIt', type: 'boolean', instructions: 'Will this person still be doing this in two weeks?' },
-    ],
-  },
-  {
     name: 'Startup idea', fun: true,
     stateMode: 'text',
-    state: "Uber for dog walkers, but the dogs are also on the blockchain and an AI agent negotiates the walk price with your dog's AI agent. Pre-revenue, pre-product, two co-founders who met last week.",
+    state: "Airbnb, but we own the whole building. Every room has the same layout so guests know what to expect. There's a person at a desk in the lobby 24/7 to hand you your key. We clean the room every day while you're out, and there's a small fridge with drinks you can pay for later. Breakfast is included downstairs from 6 to 10. We're calling it a \"vertically integrated stay platform.\" Pre-seed, raising $4M.",
     questions: [
-      { key: 'fundability', type: 'score', instructions: 'How likely is this startup to raise a seed round?',
-        levels: ['no chance', 'a friends-and-family round at best', 'plausible with a good deck', 'term sheets by Friday'] },
-      { key: 'fate', type: 'choice', instructions: 'What is the most likely fate of this company?',
-        options: [['unicorn', 'becomes a billion-dollar company'], ['acquihire', 'team gets bought for talent'], ['pivot', 'abandons the idea for something else'], ['zombie', 'limps along for years'], ['dead_in_18_months', 'runs out of money and shuts down']] },
-      { key: 'buzzwordOverload', type: 'boolean', instructions: 'Does the pitch rely on buzzwords more than substance?' },
+      { key: 'whatIsIt', type: 'choice', instructions: 'What is this startup actually describing?',
+        options: [['a_hotel', 'a building of rentable rooms with a front desk and housekeeping'], ['a_hostel', 'cheap shared rooms for travelers'], ['a_genuinely_new_idea', 'something that does not exist yet'], ['a_cult', 'a group living arrangement with a charismatic founder']] },
+      { key: 'originality', type: 'score', instructions: 'How original is this idea?',
+        levels: ['invented in ancient Rome', 'your grandparents used one', 'a twist on something familiar', 'never been done'] },
+      { key: 'alreadyExists', type: 'boolean', instructions: 'Does this product already exist under a common name?' },
     ],
   },
   {
@@ -539,6 +527,18 @@ const PRESETS = [
       { key: 'drama', type: 'score', instructions: 'How dramatic is this conflict?',
         levels: ['trivial', 'group-chat worthy', 'friendship-ending', 'call a lawyer'] },
       { key: 'shouldApologize', type: 'boolean', instructions: 'Should the narrator apologize?' },
+    ],
+  },
+  {
+    name: 'Vibe check', fun: true,
+    stateMode: 'text',
+    state: "just mass-unfollowed 400 people, deleted every app except Notes, and started waking up at 5am to journal. this is my year. again.",
+    questions: [
+      { key: 'vibe', type: 'choice', instructions: 'What is the overall vibe of the person who wrote this?',
+        options: [['main_character', 'dramatic, sees life as a movie about them'], ['villain_arc', 'done being nice, plotting'], ['golden_retriever', 'pure, enthusiastic, harmless'], ['npc', 'generic, on autopilot'], ['burnt_out', 'tired, running on fumes']] },
+      { key: 'cringe', type: 'score', instructions: 'How cringe is this post?',
+        levels: ['none: genuinely cool', 'mild: a little try-hard', 'strong: hard to read', 'terminal: screenshot and send to the group chat'] },
+      { key: 'willStickToIt', type: 'boolean', instructions: 'Will this person still be doing this in two weeks?' },
     ],
   },
 ];
